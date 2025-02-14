@@ -2,38 +2,56 @@
 import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
 import os
+import time
+# Load environment variables from .env file
 load_dotenv()
 
-try:
-    # Define Variables
-    MQTT_HOST = os.getenv('MQTT_HOST')
-    MQTT_PORT = int(os.getenv('MQTT_PORT'))
-    MQTT_KEEPALIVE_INTERVAL = int(os.getenv('MQTT_KEEPALIVE_INTERVAL'))
-    MQTT_TOPIC = os.getenv('MQTT_TOPIC')
-    MQTT_MSG = os.getenv('MQTT_MSG')
-except Exception:
-    print(Exception)
+class _Publisher_:
+    def __init__(self):
+        # Initiate MQTT Client
+        self.mqttc = mqtt.Client()
+        
+        try:
+            # Define Variables from environment variables
+            self.MQTT_HOST = os.getenv('MQTT_HOST')
+            self.MQTT_PORT = int(os.getenv('MQTT_PORT'))
+            self.MQTT_KEEPALIVE_INTERVAL = int(os.getenv('MQTT_KEEPALIVE_INTERVAL'))
+            self.MQTT_TOPIC = os.getenv('MQTT_TOPIC')
+        except Exception as e:
+            print(f"Error loading environment variables: {e}")
 
-# Define on_connect event Handler
-def on_connect(mosq, obj, rc):
-	print ("Connected to MQTT Broker")
+    # Define on_connect event handler
+    def on_connect(self, mosq, obj, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT Broker!")
+            self.mqttc.subscribe(self.MQTT_TOPIC, qos=0)
+        else:
+            print(f"Connection failed with error code {rc}")
 
-# Define on_publish event Handler
-def on_publish(client, userdata, mid):
-	print ("Message Published...")
+    # Define on_publish event handler
+    def on_publish(self, client, userdata, mid):
+        print("Message Published...")
 
-# Initiate MQTT Client
-mqttc = mqtt.Client()
+    def run(self):
+        # Register event handlers
+        self.mqttc.on_connect = self.on_connect
+        self.mqttc.on_publish = self.on_publish
 
-# Register Event Handlers
-mqttc.on_publish = on_publish
-mqttc.on_connect = on_connect
+        try:
+            # Connect to MQTT Broker
+            self.mqttc.connect(self.MQTT_HOST, self.MQTT_PORT, self.MQTT_KEEPALIVE_INTERVAL)
+            print(f"Connecting to {self.MQTT_HOST}:{self.MQTT_PORT}")
 
-# Connect with MQTT Broker
-mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL) 
+            self.mqttc.loop_start()
+            # Publish a message to the MQTT Topic
+            while True:
+                self.mqttc.publish(self.MQTT_TOPIC, "Hello")
+                time.sleep(10)
 
-# Publish message to MQTT Topic 
-mqttc.publish(MQTT_TOPIC,MQTT_MSG)
+        except Exception as e:
+            print(f"Error: {e}")
 
-# Disconnect from MQTT_Broker
-mqttc.disconnect()
+# Example usage
+if __name__ == "__main__":
+    pub = _Publisher_()
+    pub.run()
