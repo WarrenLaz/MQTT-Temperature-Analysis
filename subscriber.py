@@ -1,13 +1,18 @@
 # Import package
 import paho.mqtt.client as mqtt
+from dotenv import load_dotenv
 import os
+load_dotenv()
 
-# Define Variables
-MQTT_HOST = os.environ['MQTT_HOST']
-MQTT_PORT = os.environ['MQTT_PORT']
-MQTT_KEEPALIVE_INTERVAL = os.environ['MQTT_KEEPALIVE_INTERVAL']
-MQTT_TOPIC = os.environ['MQTT_TOPIC']
-MQTT_MSG = os.environ['MQTT_MSG']
+try:
+    # Define Variables
+    MQTT_HOST = os.getenv('MQTT_HOST')
+    MQTT_PORT = int(os.getenv('MQTT_PORT'))
+    MQTT_KEEPALIVE_INTERVAL = int(os.getenv('MQTT_KEEPALIVE_INTERVAL'))
+    MQTT_TOPIC = os.getenv('MQTT_TOPIC')
+    MQTT_MSG = os.getenv('MQTT_MSG')
+except Exception:
+    print(Exception)
 
 # Define on_connect event Handler
 def on_connect(mosq, obj, flags, rc):
