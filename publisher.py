@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import time
 import datetime
+import json
 # Load environment variables from .env file
 load_dotenv()
 print(os.getenv('MQTT_HOST'))
@@ -46,7 +47,7 @@ class _Publisher_:
             self.mqttc.loop_start()
             # Publish a message to the MQTT Topic
             while True:
-                self.mqttc.publish(self.MQTT_TOPIC, "hello")
+                self.mqttc.publish(self.MQTT_TOPIC, json.dumps({"Time" : datetime.datetime.now().isoformat()}))
                 time.sleep(10)
 
         except Exception as e:
