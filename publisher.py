@@ -47,7 +47,10 @@ class _Publisher_:
             self.mqttc.loop_start()
             # Publish a message to the MQTT Topic
             while True:
-                self.mqttc.publish(self.MQTT_TOPIC, json.dumps({"Time" : datetime.datetime.now().isoformat()}))
+                self.mqttc.publish(self.MQTT_TOPIC, json.dumps(
+                    {"Time" : datetime.datetime.now().isoformat()
+                     
+                     }))
                 time.sleep(10)
 
         except Exception as e:
