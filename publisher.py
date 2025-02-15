@@ -3,9 +3,10 @@ import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
 import os
 import time
+import datetime
 # Load environment variables from .env file
 load_dotenv()
-
+print(os.getenv('MQTT_HOST'))
 class _Publisher_:
     def __init__(self):
         # Initiate MQTT Client
@@ -45,7 +46,7 @@ class _Publisher_:
             self.mqttc.loop_start()
             # Publish a message to the MQTT Topic
             while True:
-                self.mqttc.publish(self.MQTT_TOPIC, "Hello")
+                self.mqttc.publish(self.MQTT_TOPIC, "hello")
                 time.sleep(10)
 
         except Exception as e:
