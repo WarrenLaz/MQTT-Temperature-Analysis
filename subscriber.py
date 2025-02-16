@@ -4,6 +4,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 import os
+import json
 load_dotenv()
 class _Subscriber_:
     def __init__(self):
@@ -33,14 +34,13 @@ class _Subscriber_:
         print("Subscribed to MQTT Topic")
 
     def on_message(self, mosq, obj, msg):
-        print(f"Received Packet: {msg.payload.decode()} on topic {msg.topic}")
-        #try:
-        #    self.COLLECTION.insert_one({
-        #        'Time' : msg.payload.decode(),
-        #        'Temperature' : msg.payload.decode()
-        #        })
-        #except Exception as e:
-        #    print(e)
+        log = json.loads(msg.payload.decode())
+        print(f"Received Packet: {log}")
+        try:
+            self.COLLECTION.insert_one(log)
+            print('success')
+        except Exception as e:
+            print(e)
 
     def run(self):
         # Register Event Handlers

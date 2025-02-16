@@ -59,19 +59,18 @@ class _Publisher_:
                     temperature_f = temperature_c * (9 / 5) + 32
                     humidity = self.sensor.humidity
                     print("Temp={0:0.1f}ºC, Temp={1:0.1f}ºF, Humidity={2:0.1f}%".format(temperature_c, temperature_f, humidity))
+                    self.mqttc.publish(self.MQTT_TOPIC, json.dumps(
+                    {"Time" : datetime.datetime.now().isoformat(),
+                     "temperature_c" : temperature_c,
+                     "temperature_f" : temperature_f,
+                     "humidty" : humidity
+                     }))
                 except RuntimeError as error:
                     # Errors happen fairly often, DHT's are hard to read, just keep going
                     print(error.args[0])
                 except Exception as error:
                     self.sensor.exit()
                     raise error
-                
-                self.mqttc.publish(self.MQTT_TOPIC, json.dumps(
-                    {"Time" : datetime.datetime.now().isoformat(),
-                     "temperature_c" : temperature_c,
-                     "temperature_f" : temperature_f,
-                     "humidty" : humidity
-                     }))
                 time.sleep(10)
 
         except Exception as e:
