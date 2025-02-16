@@ -1,46 +1,28 @@
 
-"""
-This Raspberry Pi code was developed by newbiely.com
-This Raspberry Pi code is made available for public use without any restriction
-For comprehensive instructions and wiring diagrams, please visit:
-https://newbiely.com/tutorials/raspberry-pi/raspberry-pi-temperature-sensor
-"""
-
-
-from w1thermsensor import W1ThermSensor
 import time
+import board
+import adafruit_dht
 
-# Find the connected DS18B20 sensor
-def find_ds18b20_sensor():
-    for sensor in W1ThermSensor.get_available_sensors():
-        if sensor.type == W1ThermSensor.THERM_SENSOR_DS18B20:
-            return sensor
-    return None
+# Sensor data pin is connected to GPIO 4
+sensor = adafruit_dht.DHT22(board.D4)
+# Uncomment for DHT11
+#sensor = adafruit_dht.DHT11(board.D4)
 
-# Read temperature from the sensor
-def read_temperature(sensor):
-    temperature_celsius = sensor.get_temperature()
-    temperature_fahrenheit = sensor.get_temperature(W1ThermSensor.DEGREES_F)
-    return temperature_celsius, temperature_fahrenheit
-
-# Find DS18B20 sensor
-ds18b20_sensor = find_ds18b20_sensor()
-
-if ds18b20_sensor is not None:
-    print(f"DS18B20 Sensor found: {ds18b20_sensor.id}")
-
+while True:
     try:
-        while True:
-            # Read temperature
-            temperature_c, temperature_f = read_temperature(ds18b20_sensor)
-            
-            print(f"Temperature: {temperature_c:.2f}°C | {temperature_f:.2f}°F")
-            
-            # Wait for a moment before reading again
-            time.sleep(2)
+        # Print the values to the serial port
+        temperature_c = sensor.temperature
+        temperature_f = temperature_c * (9 / 5) + 32
+        humidity = sensor.humidity
+        print("Temp={0:0.1f}ºC, Temp={1:0.1f}ºF, Humidity={2:0.1f}%".format(temperature_c, temperature_f, humidity))
 
-    except KeyboardInterrupt:
-        print("Program terminated by user.")
+    except RuntimeError as error:
+        # Errors happen fairly often, DHT's are hard to read, just keep going
+        print(error.args[0])
+        time.sleep(2.0)
+        continue
+    except Exception as error:
+        sensor.exit()
+        raise error
 
-else:
-    print("DS18B20 Sensor not found.")
+    time.sleep(3.0)
