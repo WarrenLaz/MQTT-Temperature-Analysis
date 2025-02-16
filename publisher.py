@@ -5,6 +5,11 @@ import os
 import time
 import datetime
 import json
+import time
+import board
+import adafruit_dht
+
+
 # Load environment variables from .env file
 load_dotenv()
 print(os.getenv('MQTT_HOST'))
@@ -19,6 +24,7 @@ class _Publisher_:
             self.MQTT_PORT = int(os.getenv('MQTT_PORT'))
             self.MQTT_KEEPALIVE_INTERVAL = int(os.getenv('MQTT_KEEPALIVE_INTERVAL'))
             self.MQTT_TOPIC = os.getenv('MQTT_TOPIC')
+            self.sensor = adafruit_dht.DHT22(board.D4)
         except Exception as e:
             print(f"Error loading environment variables: {e}")
 
@@ -47,9 +53,24 @@ class _Publisher_:
             self.mqttc.loop_start()
             # Publish a message to the MQTT Topic
             while True:
+                try:
+                # Print the values to the serial port
+                    temperature_c = self.sensor.temperature
+                    temperature_f = temperature_c * (9 / 5) + 32
+                    humidity = self.sensor.humidity
+                    print("Temp={0:0.1f}ºC, Temp={1:0.1f}ºF, Humidity={2:0.1f}%".format(temperature_c, temperature_f, humidity))
+                except RuntimeError as error:
+                    # Errors happen fairly often, DHT's are hard to read, just keep going
+                    print(error.args[0])
+                except Exception as error:
+                    self.sensor.exit()
+                    raise error
+                
                 self.mqttc.publish(self.MQTT_TOPIC, json.dumps(
-                    {"Time" : datetime.datetime.now().isoformat()
-                     
+                    {"Time" : datetime.datetime.now().isoformat(),
+                     "temperature_c" : temperature_c,
+                     "temperature_f" : temperature_f,
+                     "humidty" : humidity
                      }))
                 time.sleep(10)
 
