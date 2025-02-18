@@ -35,12 +35,14 @@ class _Subscriber_:
 
     def on_message(self, mosq, obj, msg):
         log = json.loads(msg.payload.decode())
+        
         print(f"Received Packet: {log}")
         try:
+            log['Time'],log['temperature_c'],log['temperature_f'],log['humidity']
             self.COLLECTION.insert_one(log)
             print('success')
         except Exception as e:
-            print(e)
+            print('Exception:', e)
 
     def run(self):
         # Register Event Handlers
